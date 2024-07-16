@@ -62,9 +62,17 @@ class utility:
             self.gameGrid[row][col] = int(element.text)
 
     def generateNNMove(self) -> str:
-        # Flatten the game grid and convert to a PyTorch tensor
-        input_tensor = torch.tensor(self.gameGrid.flatten(), dtype=torch.float32)
+        # Normalize the game grid using a logarithmic transformation
+        normalized_grid = numpy.where(self.gameGrid > 0, numpy.log2(self.gameGrid), 0)
+        # Min-Max normalization to scale values between 0 and 1
+        min_val = numpy.min(normalized_grid)
+        max_val = numpy.max(normalized_grid)
+        if max_val > min_val:  # To avoid division by zero
+            normalized_grid = (normalized_grid - min_val) / (max_val - min_val)
+        # Flatten the normalized game grid and convert to a PyTorch tensor
+        input_tensor = torch.tensor(normalized_grid.flatten(), dtype=torch.float32)
         output_tensor = self.model(input_tensor)
+        print(output_tensor)
         move_indices = torch.argsort(output_tensor, descending=True).tolist()
 
         for move_index in move_indices:
