@@ -20,7 +20,7 @@ LEFT = Keys.ARROW_LEFT
 RIGHT = Keys.ARROW_RIGHT
 
 
-class utility:
+class game_controller:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.gameGrid = numpy.zeros((4, 4))
@@ -28,27 +28,27 @@ class utility:
         self.model = Game2048NN()
         return
 
-    def runGame(self, numMoves):
+    def run_game(self, numMoves):
         self.driver.get("https://play2048.co/")
         selector = "//*[contains(@class, 'tile tile-')]"
-        waitCond = WebDriverWait(self.driver, 10).until(
+        WebDriverWait(self.driver, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, selector)))  # stored as a variable for debugging?
         stopCondition = "body > div.container.upper > div.game-container > div.game-message.game-over"
         while (len(self.driver.find_elements(By.CSS_SELECTOR, stopCondition)) == 0 and numMoves != 0):
-            waitCond = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector)))
-            self.getGameState()
-            self.printGameGrid()
-            move = self.generateNNMove()
-            self.sendMove(move)
+            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector)))
+            self.get_game_state()
+            self.print_game_grid()
+            move = self.generate_NN_moves()
+            self.send_move(move)
             numMoves -= 1
-        finalState = self.getGameState()
-        self.printGameGrid()
-        self.getGameScore()
-        self.printGameScore()
+        finalState = self.get_game_state()
+        self.print_game_grid()
+        self.get_game_score()
+        self.print_game_score()
         self.driver.quit()
         return finalState
 
-    def getGameState(self):
+    def get_game_state(self):
         row = 0
         col = 0
         selector = "//*[contains(@class, 'tile tile-')]"
@@ -66,16 +66,16 @@ class utility:
             col = int(coordinates.group(1)) - 1  # "  "   "   "   "   "   "
             self.gameGrid[row][col] = int(element.text)
 
-    def getGameScore(self):
+    def get_game_score(self):
         time.sleep(1)
         selector = "/html/body/div[2]/div[1]/div/div[1]"
         element = self.driver.find_element(By.XPATH, selector)
         self.gameScore = int(element.text)
 
-    def printGameScore(self):
+    def print_game_score(self):
         print(self.gameScore)
 
-    def generateNNMove(self) -> str:
+    def generate_NN_moves(self) -> str:
         # Normalize the game grid using a logarithmic transformation
         normalized_grid = numpy.where(self.gameGrid > 0, numpy.log2(self.gameGrid), 0)
         # Min-Max normalization to scale values between 0 and 1
@@ -182,7 +182,7 @@ class utility:
             grid[row, :] = new_row
         return grid
 
-    def generateRandomMove(self) -> str:
+    def generate_random_move(self) -> str:
         valid_moves = [UP, DOWN, LEFT, RIGHT]
         random.shuffle(valid_moves)
         for move in valid_moves:
@@ -190,26 +190,26 @@ class utility:
                 return move
         return UP  # This should never happen unless the game is over
 
-    def sendMove(self, move):
+    def send_move(self, move):
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(move)
         return
 
-    def printGameGrid(self):
+    def print_game_grid(self):
         print(self.gameGrid)
         return
 
 
-game = utility()
-game.runGame(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
+game = game_controller()
+game.run_game(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
 
-# game = utility()
+# game = game_controller()
 # game.driver.get("https://play2048.co/")
 # time.sleep(3)
 
 # for __ in range(10):
-#     game.getGameState()
-#     game.printGameGrid()
-#     move = game.generateRandomMove()
-#     game.sendMove(move)
+#     game.get_game_state()
+#     game.print_game_grid()
+#     move = game.generate_random_move()
+#     game.send_move(move)
 #     #time.sleep(0.1) #let page update
