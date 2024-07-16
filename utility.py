@@ -92,9 +92,19 @@ class utility:
         for move_index in move_indices:
             move = self.index_to_move(move_index)
             if self.is_valid_move(move):
-                print(f"NN returned {move}")
+                print(f"NN returned {self.move_to_readable_string(move)}")
                 return move
             print("NN returned invalid moves, falling back to next best move")
+    
+    def move_to_readable_string(self, move: str) -> str:
+        if move == UP:
+            return "UP"
+        elif move == DOWN:
+            return "DOWN"
+        elif move == LEFT:
+            return "LEFT"
+        else:
+            return "RIGHT"
 
     def index_to_move(self, index: int) -> str:
         if index == 0:
