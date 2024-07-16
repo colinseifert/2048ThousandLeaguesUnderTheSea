@@ -192,17 +192,11 @@ class Game2048NN(torch.nn.Module):
     def __init__(self):
         super(Game2048NN, self).__init__()
         # Define the input layer (16 inputs) and the first hidden layer
-        self.fc1 = torch.nn.Linear(16, 128)  # First hidden layer with 128 neurons
-        self.fc2 = torch.nn.Linear(128, 64)  # Second hidden layer with 64 neurons
-        self.fc3 = torch.nn.Linear(64, 32)  # Third hidden layer with 32 neurons
-        self.fc4 = torch.nn.Linear(32, 4)  # Output layer with 4 neurons (one for each move)
+        self.fc1 = torch.nn.Linear(16, 4)  # Output layer with 4 neurons (one for each move)
 
     def forward(self, x):
         # Pass the input through the layers
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)  # No activation function here as we will apply it during loss computation
+        x = self.fc1(x)  # No activation function here as we will apply it during loss computation
         return x
 
 
