@@ -22,6 +22,7 @@ class utility:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.gameGrid = numpy.zeros((4, 4))
+        self.gameScore = 0
         self.model = Game2048NN()
         return
 
@@ -40,6 +41,8 @@ class utility:
             numMoves -= 1
         finalState = self.getGameState()
         self.printGameGrid()
+        self.getGameScore()
+        self.printGameScore()
         self.driver.quit()
         return finalState
 
@@ -60,6 +63,15 @@ class utility:
             row = int(coordinates.group(2)) - 1  # decrement to have 0 indexing
             col = int(coordinates.group(1)) - 1  # "  "   "   "   "   "   "
             self.gameGrid[row][col] = int(element.text)
+
+    def getGameScore(self):
+        time.sleep(1)
+        selector = "/html/body/div[2]/div[1]/div/div[1]"
+        element = self.driver.find_element(By.XPATH, selector)
+        self.gameScore = int(element.text)
+
+    def printGameScore(self):
+        print(self.gameScore)
 
     def generateNNMove(self) -> str:
         # Normalize the game grid using a logarithmic transformation
