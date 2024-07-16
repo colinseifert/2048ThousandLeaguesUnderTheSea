@@ -20,7 +20,7 @@ LEFT = Keys.ARROW_LEFT
 RIGHT = Keys.ARROW_RIGHT
 
 
-class game_controller:
+class GameController:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.gameGrid = numpy.zeros((4, 4))
@@ -200,10 +200,10 @@ class game_controller:
         return
 
 
-game = game_controller()
+game = GameController()
 game.run_game(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
 
-# game = game_controller()
+# game = GameController()
 # game.driver.get("https://play2048.co/")
 # time.sleep(3)
 
