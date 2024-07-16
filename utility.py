@@ -12,7 +12,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from neural_network import Game2048NN
+from Game2048NN import Game2048NN
 
 UP = Keys.ARROW_UP
 DOWN = Keys.ARROW_DOWN
