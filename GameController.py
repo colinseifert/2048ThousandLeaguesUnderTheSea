@@ -29,7 +29,7 @@ class GameController:
         while (len(self.driver.find_elements(By.CSS_SELECTOR, stopCondition)) == 0 and numMoves != 0):
             WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector)))
             self.get_game_state()
-            self.print_game_grid()
+            # self.print_game_grid()
             try:
                 move = MoveGenerator.generate_NN_moves(self.gameGrid, self.model)
             except Exception as e:

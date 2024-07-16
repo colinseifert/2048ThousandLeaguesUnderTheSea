@@ -26,15 +26,15 @@ class MoveGenerator:
         # Flatten the normalized game grid and convert to a PyTorch tensor
         input_tensor = torch.tensor(normalized_grid.flatten(), dtype=torch.float32)
         output_tensor = model(input_tensor)
-        print(output_tensor)
+        # print(output_tensor)
         move_indices = torch.argsort(output_tensor, descending=True).tolist()
 
         for move_index in move_indices:
             move = MoveGenerator.index_to_move(move_index)
             if MoveGenerator.is_valid_move(gameGrid, move):
-                print(f"NN returned {MoveGenerator.move_to_readable_string(move)}")
+                # print(f"NN returned {MoveGenerator.move_to_readable_string(move)}")
                 return move
-            print("NN returned invalid moves, falling back to next best move")
+            # print("NN returned invalid moves, falling back to next best move")
 
         # fail gracefully if no valid moves found
         raise Exception("No valid moves found")

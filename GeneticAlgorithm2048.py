@@ -65,6 +65,10 @@ class GeneticAlgorithm2048:
             scores = self.evaluate_population()
             print(f"Generation {generation + 1} scores: {scores}")
 
+            for i, score in enumerate(scores):
+                weights = self.get_weights(self.population[i])
+                print(f"Model {i + 1} weights: {weights}")
+
             new_population = []
             for _ in range(self.population_size):
                 parent1, parent2 = self.selection(scores)
