@@ -2,13 +2,13 @@ import random
 
 import numpy as np
 import torch
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from Game2048NN import Game2048NN
 from GameController import GameController
 
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=5, generations=2, mutation_probability=1 / 32):
+    def __init__(self, population_size=5, generations=3, mutation_probability=1 / 32):
         self.population_size = population_size
         self.generations = generations
         self.population = [self.create_individual() for _ in range(population_size)]
@@ -52,9 +52,17 @@ class GeneticAlgorithm2048:
                 weights[i] = random.uniform(-1, 1)
         self.set_weights(model, weights)
 
+    def evaluate_population(self):
+        scores = []
+        with ThreadPoolExecutor(max_workers=self.population_size) as executor:
+            futures = [executor.submit(self.fitness, model) for model in self.population]
+            for future in as_completed(futures):
+                scores.append(future.result())
+        return scores
+
     def run(self):
         for generation in range(self.generations):
-            scores = [self.fitness(model) for model in self.population]
+            scores = self.evaluate_population()
             print(f"Generation {generation + 1} scores: {scores}")
 
             new_population = []
