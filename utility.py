@@ -92,7 +92,7 @@ class utility:
             if self.is_valid_move(move):
                 print(f"NN returned {move}")
                 return move
-            print("NN returned invalid moves, falling back to random move")
+            print("NN returned invalid moves, falling back to next best move")
 
     def index_to_move(self, index: int) -> str:
         if index == 0:
