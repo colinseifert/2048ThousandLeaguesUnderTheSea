@@ -35,6 +35,9 @@ class MoveGenerator:
                 print(f"NN returned {MoveGenerator.move_to_readable_string(move)}")
                 return move
             print("NN returned invalid moves, falling back to next best move")
+
+        # fail gracefully if no valid moves found
+        raise Exception("No valid moves found")
         
     @staticmethod
     def move_to_readable_string(move: str) -> str:

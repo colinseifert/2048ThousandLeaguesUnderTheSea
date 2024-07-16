@@ -30,7 +30,11 @@ class GameController:
             WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector)))
             self.get_game_state()
             self.print_game_grid()
-            move = MoveGenerator.generate_NN_moves(self.gameGrid, self.model)
+            try:
+                move = MoveGenerator.generate_NN_moves(self.gameGrid, self.model)
+            except Exception as e:
+                print(e)
+                break
             self.send_move(move)
             numMoves -= 1
         finalState = self.get_game_state()
@@ -77,8 +81,8 @@ class GameController:
         return
 
 
-game = GameController()
-game.run_game(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
+# game = GameController()
+# game.run_game(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
 
 # game = GameController()
 # game.driver.get("https://play2048.co/")
