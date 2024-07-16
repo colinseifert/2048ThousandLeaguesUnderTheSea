@@ -1,17 +1,16 @@
+import random
+import re
+import time
+
+import numpy
 import torch
 import torch.nn
 import torch.nn.functional as F
-import numpy
-import re
-import time
-import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support  import expected_conditions as EC
 
 UP = Keys.ARROW_UP
 DOWN = Keys.ARROW_DOWN
@@ -22,16 +21,17 @@ RIGHT = Keys.ARROW_RIGHT
 class utility:
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.gameGrid = numpy.zeros((4,4))
+        self.gameGrid = numpy.zeros((4, 4))
         self.model = Game2048NN()
         return
 
-    def runGame(self,numMoves):
+    def runGame(self, numMoves):
         self.driver.get("https://play2048.co/")
         selector = "//*[contains(@class, 'tile tile-')]"
-        waitCond = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector))) #stored as a variable for debugging? 
+        waitCond = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, selector)))  # stored as a variable for debugging?
         stopCondition = "body > div.container.upper > div.game-container > div.game-message.game-over"
-        while(len(self.driver.find_elements(By.CSS_SELECTOR, stopCondition)) == 0 and numMoves != 0):
+        while (len(self.driver.find_elements(By.CSS_SELECTOR, stopCondition)) == 0 and numMoves != 0):
             waitCond = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, selector)))
             self.getGameState()
             self.printGameGrid()
@@ -43,34 +43,32 @@ class utility:
         self.driver.quit()
         return finalState
 
-
-
     def getGameState(self):
         row = 0
         col = 0
         selector = "//*[contains(@class, 'tile tile-')]"
 
-        time.sleep(0.2) #wait for page to catch up after each move
+        time.sleep(0.2)  # wait for page to catch up after each move
         elements = self.driver.find_elements(By.XPATH, selector)
-        #print(elements)
-        self.gameGrid = numpy.zeros((4,4))
+        # print(elements)
+        self.gameGrid = numpy.zeros((4, 4))
         for element in elements:
             # regex the string to get coordinates
             # convert text to int
             # update matrix with int at coordinates
             coordinates = re.search(r"tile-position-(\d+)-(\d+)", element.get_attribute('class'))
-            row = int(coordinates.group(2)) -1 #decrement to have 0 indexing
-            col = int(coordinates.group(1)) -1 # "  "   "   "   "   "   "
+            row = int(coordinates.group(2)) - 1  # decrement to have 0 indexing
+            col = int(coordinates.group(1)) - 1  # "  "   "   "   "   "   "
             self.gameGrid[row][col] = int(element.text)
 
-    def generateRandomMove(self)->str:
-        num = random.randint(1,4)
-        #print("randomMove:",num)
-        if(num == 1):
+    def generateRandomMove(self) -> str:
+        num = random.randint(1, 4)
+        # print("randomMove:",num)
+        if (num == 1):
             return UP
-        if(num == 2):
+        if (num == 2):
             return DOWN
-        if(num == 3):
+        if (num == 3):
             return LEFT
         return RIGHT
 
@@ -96,11 +94,11 @@ class utility:
         body = self.driver.find_element(By.TAG_NAME, 'body')
         body.send_keys(move)
         return
-    
+
     def printGameGrid(self):
         print(self.gameGrid)
         return
-    
+
 
 class Game2048NN(torch.nn.Module):
     def __init__(self):
@@ -121,7 +119,7 @@ class Game2048NN(torch.nn.Module):
 
 
 game = utility()
-game.runGame(-1) #positive value to execute a specific number of moves, set to -1 to play a full game
+game.runGame(-1)  # positive value to execute a specific number of moves, set to -1 to play a full game
 
 # game = utility()
 # game.driver.get("https://play2048.co/")
