@@ -47,6 +47,7 @@ class utility:
         # time.sleep(0.75) #wait for page to catch up after each move
         elements = self.driver.find_elements(By.XPATH, selector)
         #print(elements)
+        self.gameGrid = numpy.zeros((4,4))
         for element in elements:
             # regex the string to get coordinates
             # convert text to int
