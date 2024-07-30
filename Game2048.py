@@ -32,7 +32,7 @@ class Game2048:
                     continue
                 if j + 1 < len(tiles) and tiles[j] == tiles[j + 1]:
                     new_row.append(tiles[j] * 2)
-                    self.score += tiles[j] * 2  # Update score
+                    self.score += tiles[j] * 2
                     skip = True
                 else:
                     new_row.append(tiles[j])
@@ -94,7 +94,7 @@ class Game2048:
         print(self.board)
 
     def run_game(self):
-        
+
         while not self.is_game_over():
             try:
                 move = MoveGenerator.generate_NN_moves(self.board, self.model)

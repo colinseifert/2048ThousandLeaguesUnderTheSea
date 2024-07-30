@@ -1,11 +1,13 @@
+import os
 import random
+
 import numpy as np
 import torch
 from Game2048 import Game2048
 from Game2048NN import Game2048NN
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=100, generations=5, mutation_probability=1 / 32, elitism_rate=0.1):
+    def __init__(self, population_size=100, generations=5, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
         self.population_size = population_size
         self.generations = generations
         self.mutation_probability = mutation_probability
@@ -13,6 +15,9 @@ class GeneticAlgorithm2048:
         self.population = [self.create_individual() for _ in range(population_size)]
         self.best_model = None
         self.best_score = -1
+        self.model_dir = model_dir
+        os.makedirs(self.model_dir, exist_ok=True)
+        self.current_generation = self.load_population()
 
     def create_individual(self):
         model = Game2048NN()
@@ -31,8 +36,7 @@ class GeneticAlgorithm2048:
         # Improved fitness evaluation
         score = game.get_score()
         highest_tile = np.max(game.board)
-        empty_cells = len([(i, j) for i in range(4) for j in range(4) if game.board[i][j] == 0])
-        fitness_score = score + highest_tile + empty_cells
+        fitness_score = score + highest_tile
 
         # Track the best model
         if fitness_score > self.best_score:
@@ -60,7 +64,7 @@ class GeneticAlgorithm2048:
         weights = self.get_weights(model)
         for i in range(len(weights)):
             if random.random() < self.mutation_probability:
-                weights[i] += random.gauss(0, 1)
+                weights[i] = random.uniform(-1, 1)
         self.set_weights(model, weights)
 
     def evaluate_population(self):
@@ -70,11 +74,31 @@ class GeneticAlgorithm2048:
             scores.append(score)
         return scores
 
+    def save_population(self, generation):
+        for i, model in enumerate(self.population):
+            model_path = os.path.join(self.model_dir, f"model_gen{generation}_ind{i}.pt")
+            model.save_model(model_path)
+
+    def load_population(self):
+        existing_files = [f for f in os.listdir(self.model_dir) if f.startswith('model_gen')]
+        if not existing_files:
+            return 0  # Start from generation 0 if no existing models
+
+        # Find the highest generation number from the existing files
+        max_gen = max(int(f.split('_')[1][3:]) for f in existing_files)
+        for i in range(self.population_size):
+            model_path = os.path.join(self.model_dir, f"model_gen{max_gen}_ind{i}.pt")
+            if os.path.exists(model_path):
+                self.population[i].load_model(model_path)
+        return max_gen + 1  # Continue from the next generation
+
     def run(self):
-        for generation in range(self.generations):
+        for generation in range(self.current_generation, self.current_generation + self.generations):
             scores = self.evaluate_population()
             sorted_scores = sorted(scores, reverse=True)
             print(f"Generation {generation + 1} scores: {sorted_scores}")
+
+            self.save_population(generation)
 
             # Elitism: Copy the top individuals to the new population
             num_elites = int(self.elitism_rate * self.population_size)
