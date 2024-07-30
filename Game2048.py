@@ -5,6 +5,7 @@ import numpy as np
 class Game2048:
     def __init__(self):
         self.board = np.zeros((4, 4), dtype=int)
+        self.score = 0
         self.add_random_tile()
         self.add_random_tile()
 
@@ -26,6 +27,7 @@ class Game2048:
                     continue
                 if j + 1 < len(tiles) and tiles[j] == tiles[j + 1]:
                     new_row.append(tiles[j] * 2)
+                    self.score += tiles[j] * 2
                     skip = True
                 else:
                     new_row.append(tiles[j])
@@ -81,15 +83,18 @@ class Game2048:
     def print_board(self):
         print(self.board)
 
+    def print_score(self):
+        print(self.score)
 
-# # Example usage:
-# game = Game2048()
-# game.print_board()
-# game.make_move('UP')
-# game.print_board()
-# game.make_move('LEFT')
-# game.print_board()
-# game.make_move('DOWN')
-# game.print_board()
-# game.make_move('RIGHT')
-# game.print_board()
+
+# Example usage:
+game = Game2048()
+game.print_board()
+game.make_move('UP')
+game.print_board()
+game.make_move('LEFT')
+game.print_board()
+game.make_move('DOWN')
+game.print_board()
+game.make_move('RIGHT')
+game.print_board()

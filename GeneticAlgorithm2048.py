@@ -1,18 +1,20 @@
+import os
 import random
-
 import numpy as np
 import torch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from Game2048NN import Game2048NN
 from GameController import GameController
 
-
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=5, generations=3, mutation_probability=1 / 32):
+    def __init__(self, population_size=2, generations=3, mutation_probability=1 / 32, model_dir='models'):
         self.population_size = population_size
         self.generations = generations
         self.population = [self.create_individual() for _ in range(population_size)]
         self.mutation_probability = mutation_probability
+        self.model_dir = model_dir
+        os.makedirs(self.model_dir, exist_ok=True)
+        self.load_population()
 
     def create_individual(self):
         model = Game2048NN()
@@ -60,6 +62,17 @@ class GeneticAlgorithm2048:
                 scores.append(future.result())
         return scores
 
+    def save_population(self, generation):
+        for i, model in enumerate(self.population):
+            model_path = os.path.join(self.model_dir, f"model_gen{generation}_ind{i}.pt")
+            model.save_model(model_path)
+
+    def load_population(self):
+        for i in range(self.population_size):
+            model_path = os.path.join(self.model_dir, f"model_gen{self.generations - 1}_ind{i}.pt")
+            if os.path.exists(model_path):
+                self.population[i].load_model(model_path)
+
     def run(self):
         for generation in range(self.generations):
             scores = self.evaluate_population()
@@ -69,6 +82,8 @@ class GeneticAlgorithm2048:
                 weights = self.get_weights(self.population[i])
                 print(f"Model {i + 1} weights: {weights}")
 
+            self.save_population(generation)
+
             new_population = []
             for _ in range(self.population_size):
                 parent1, parent2 = self.selection(scores)
@@ -76,7 +91,6 @@ class GeneticAlgorithm2048:
                 self.mutate(child)
                 new_population.append(child)
             self.population = new_population
-
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm2048()
