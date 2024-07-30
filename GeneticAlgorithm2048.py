@@ -5,11 +5,14 @@ from Game2048 import Game2048
 from Game2048NN import Game2048NN
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=10, generations=1000, mutation_probability=1 / 32):
+    def __init__(self, population_size=100, generations=5, mutation_probability=1 / 32, elitism_rate=0.1):
         self.population_size = population_size
         self.generations = generations
-        self.population = [self.create_individual() for _ in range(population_size)]
         self.mutation_probability = mutation_probability
+        self.elitism_rate = elitism_rate
+        self.population = [self.create_individual() for _ in range(population_size)]
+        self.best_model = None
+        self.best_score = -1
 
     def create_individual(self):
         model = Game2048NN()
@@ -25,7 +28,18 @@ class GeneticAlgorithm2048:
         game = Game2048()
         game.model = model
         game.run_game()
-        return game.get_score()
+        # Improved fitness evaluation
+        score = game.get_score()
+        highest_tile = np.max(game.board)
+        empty_cells = len([(i, j) for i in range(4) for j in range(4) if game.board[i][j] == 0])
+        fitness_score = score + highest_tile + empty_cells
+
+        # Track the best model
+        if fitness_score > self.best_score:
+            self.best_score = fitness_score
+            self.best_model = model
+
+        return fitness_score
 
     def selection(self, scores):
         total_score = sum(scores)
@@ -46,7 +60,7 @@ class GeneticAlgorithm2048:
         weights = self.get_weights(model)
         for i in range(len(weights)):
             if random.random() < self.mutation_probability:
-                weights[i] = random.uniform(-1, 1)
+                weights[i] += random.gauss(0, 1)
         self.set_weights(model, weights)
 
     def evaluate_population(self):
@@ -59,19 +73,32 @@ class GeneticAlgorithm2048:
     def run(self):
         for generation in range(self.generations):
             scores = self.evaluate_population()
-            print(f"Generation {generation + 1} scores: {scores}")
+            sorted_scores = sorted(scores, reverse=True)
+            print(f"Generation {generation + 1} scores: {sorted_scores}")
 
-            for i, score in enumerate(scores):
-                weights = self.get_weights(self.population[i])
-                # print(f"Model {i + 1} weights: {weights}")
+            # Elitism: Copy the top individuals to the new population
+            num_elites = int(self.elitism_rate * self.population_size)
+            elite_indices = np.argsort(scores)[-num_elites:]
+            elites = [self.population[i] for i in elite_indices]
 
-            new_population = []
-            for _ in range(self.population_size):
+            new_population = elites.copy()
+            while len(new_population) < self.population_size:
                 parent1, parent2 = self.selection(scores)
                 child = self.crossover(parent1, parent2)
                 self.mutate(child)
                 new_population.append(child)
             self.population = new_population
+
+        # Print the final game board state of the highest score model
+        if self.best_model:
+            best_game = Game2048()
+            best_game.model = self.best_model
+            best_game.run_game()
+            print("Final board state of the highest score model:")
+            best_game.print_board()
+            print(f"Highest fitness score: {self.best_score}")
+            # highest actual score on board
+            print(f"Highest score: {best_game.get_score()}")
 
 
 if __name__ == "__main__":
