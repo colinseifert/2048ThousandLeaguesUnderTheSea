@@ -5,7 +5,7 @@ from Game2048 import Game2048
 from Game2048NN import Game2048NN
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=2, generations=2, mutation_probability=1 / 32):
+    def __init__(self, population_size=10, generations=1000, mutation_probability=1 / 32):
         self.population_size = population_size
         self.generations = generations
         self.population = [self.create_individual() for _ in range(population_size)]
@@ -63,7 +63,7 @@ class GeneticAlgorithm2048:
 
             for i, score in enumerate(scores):
                 weights = self.get_weights(self.population[i])
-                print(f"Model {i + 1} weights: {weights}")
+                # print(f"Model {i + 1} weights: {weights}")
 
             new_population = []
             for _ in range(self.population_size):

@@ -106,7 +106,7 @@ class Game2048:
             # print("Board after move:")
             # self.print_board()
             # print(f"Score: {self.get_score()}")
-        print("Final board:")
-        self.print_board()
-        print(f"Final score: {self.get_score()}")
+        # print("Final board:")
+        # self.print_board()
+        # print(f"Final score: {self.get_score()}")
         return
