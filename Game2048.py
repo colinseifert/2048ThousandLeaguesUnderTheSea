@@ -1,12 +1,17 @@
 import random
 import numpy as np
+from Game2048NN import Game2048NN
+from MoveGenerator import MoveGenerator
+import torch
 
 
 class Game2048:
     def __init__(self):
         self.board = np.zeros((4, 4), dtype=int)
+        self.model = Game2048NN()
         self.add_random_tile()
         self.add_random_tile()
+        return
 
     def add_random_tile(self):
         empty_cells = [(i, j) for i in range(4) for j in range(4) if self.board[i][j] == 0]
@@ -81,7 +86,19 @@ class Game2048:
     def print_board(self):
         print(self.board)
 
-
+    def run_game(self):
+        # generate initial tiles (already done on instantiation)
+        #
+        while(not self.is_game_over()):
+            try:
+                move = MoveGenerator.generate_NN_moves(self.board, self.model)
+            except Exception as e:
+                print(e)
+                break
+            self.make_move(move)
+        print(self.board)
+        #can add saving NN to file here
+        return
 # # Example usage:
 # game = Game2048()
 # game.print_board()
@@ -93,3 +110,5 @@ class Game2048:
 # game.print_board()
 # game.make_move('RIGHT')
 # game.print_board()
+game = Game2048()
+game.run_game
