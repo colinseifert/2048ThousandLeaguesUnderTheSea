@@ -14,7 +14,7 @@ class GeneticAlgorithm2048:
         self.mutation_probability = mutation_probability
         self.model_dir = model_dir
         os.makedirs(self.model_dir, exist_ok=True)
-        self.load_population()
+        self.current_generation = self.load_population()
 
     def create_individual(self):
         model = Game2048NN()
@@ -68,13 +68,20 @@ class GeneticAlgorithm2048:
             model.save_model(model_path)
 
     def load_population(self):
+        existing_files = [f for f in os.listdir(self.model_dir) if f.startswith('model_gen')]
+        if not existing_files:
+            return 0  # Start from generation 0 if no existing models
+
+        # Find the highest generation number from the existing files
+        max_gen = max(int(f.split('_')[1][3:]) for f in existing_files)
         for i in range(self.population_size):
-            model_path = os.path.join(self.model_dir, f"model_gen{self.generations - 1}_ind{i}.pt")
+            model_path = os.path.join(self.model_dir, f"model_gen{max_gen}_ind{i}.pt")
             if os.path.exists(model_path):
                 self.population[i].load_model(model_path)
+        return max_gen + 1  # Continue from the next generation
 
     def run(self):
-        for generation in range(self.generations):
+        for generation in range(self.current_generation, self.current_generation + self.generations):
             scores = self.evaluate_population()
             print(f"Generation {generation + 1} scores: {scores}")
 
