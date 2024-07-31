@@ -15,6 +15,7 @@ class GeneticAlgorithm2048:
         self.population = [self.create_individual() for _ in range(population_size)]
         self.best_model = None
         self.best_score = -1
+        self.best_final_board = None
         self.model_dir = model_dir
         os.makedirs(self.model_dir, exist_ok=True)
         self.current_generation = self.load_population()
@@ -38,10 +39,11 @@ class GeneticAlgorithm2048:
         highest_tile = np.max(game.board)
         fitness_score = score + highest_tile
 
-        # Track the best model
+        # Track the best model and what its final board state was
         if fitness_score > self.best_score:
             self.best_score = fitness_score
             self.best_model = model
+            self.best_final_board = game.board
 
         return fitness_score
 
@@ -115,14 +117,9 @@ class GeneticAlgorithm2048:
 
         # Print the final game board state of the highest score model
         if self.best_model:
-            best_game = Game2048()
-            best_game.model = self.best_model
-            best_game.run_game()
-            print("Final board state of the highest score model:")
-            best_game.print_board()
-            print(f"Highest fitness score: {self.best_score}")
-            # highest actual score on board
-            print(f"Highest score: {best_game.get_score()}")
+            print(f"Final board state of the highest scoring model during the last {self.generations} generations:")
+            print(self.best_final_board)
+            print(f"Fitness score for this model on this game: {self.best_score}")
 
 
 if __name__ == "__main__":
