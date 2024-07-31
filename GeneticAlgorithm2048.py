@@ -1,13 +1,13 @@
 import os
 import random
-
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 from Game2048 import Game2048
 from Game2048NN import Game2048NN
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=100, generations=50, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
+    def __init__(self, population_size=100, generations=10, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
         self.population_size = population_size
         self.generations = generations
         self.mutation_probability = mutation_probability
@@ -19,6 +19,7 @@ class GeneticAlgorithm2048:
         self.model_dir = model_dir
         os.makedirs(self.model_dir, exist_ok=True)
         self.current_generation = self.load_population()
+        self.generation_scores = []
 
     def create_individual(self):
         model = Game2048NN()
@@ -97,6 +98,7 @@ class GeneticAlgorithm2048:
     def run(self):
         for generation in range(self.current_generation, self.current_generation + self.generations):
             scores = self.evaluate_population()
+            self.generation_scores.append(scores)
             sorted_scores = sorted(scores, reverse=True)
             print(f"Generation {generation + 1} scores: {sorted_scores}")
 
@@ -121,6 +123,17 @@ class GeneticAlgorithm2048:
             print(self.best_final_board)
             print(f"Fitness score for this model on this game: {self.best_score}")
 
+        # Plot the scores
+        self.plot_scores()
+
+    def plot_scores(self):
+        generations = range(self.current_generation, self.current_generation + self.generations)
+        max_scores = [max(scores) for scores in self.generation_scores]
+        plt.scatter(generations, max_scores)
+        plt.xlabel('Generations')
+        plt.ylabel('Max Fitness Score')
+        plt.title('Max Fitness Score over Generations')
+        plt.show()
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm2048()
