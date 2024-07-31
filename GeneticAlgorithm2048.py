@@ -7,7 +7,7 @@ from Game2048 import Game2048
 from Game2048NN import Game2048NN
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=100, generations=5, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
+    def __init__(self, population_size=100, generations=50, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
         self.population_size = population_size
         self.generations = generations
         self.mutation_probability = mutation_probability
