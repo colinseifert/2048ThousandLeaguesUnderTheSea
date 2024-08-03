@@ -1,18 +1,25 @@
+import os
 import random
-
 import numpy as np
 import torch
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import matplotlib.pyplot as plt
+from Game2048 import Game2048
 from Game2048NN import Game2048NN
-from GameController import GameController
-
 
 class GeneticAlgorithm2048:
-    def __init__(self, population_size=5, generations=3, mutation_probability=1 / 32):
+    def __init__(self, population_size=100, generations=10, mutation_probability=1 / 32, elitism_rate=0.1, model_dir='models'):
         self.population_size = population_size
         self.generations = generations
-        self.population = [self.create_individual() for _ in range(population_size)]
         self.mutation_probability = mutation_probability
+        self.elitism_rate = elitism_rate
+        self.population = [self.create_individual() for _ in range(population_size)]
+        self.best_model = None
+        self.best_score = -1
+        self.best_final_board = None
+        self.model_dir = model_dir
+        os.makedirs(self.model_dir, exist_ok=True)
+        self.current_generation = self.load_population()
+        self.generation_scores = []
 
     def create_individual(self):
         model = Game2048NN()
@@ -25,10 +32,21 @@ class GeneticAlgorithm2048:
         model.fc1.weight.data = torch.tensor(weights.reshape((4, 16)), dtype=torch.float32)
 
     def fitness(self, model):
-        game = GameController()
+        game = Game2048()
         game.model = model
-        game.run_game(-1)
-        return game.gameScore
+        game.run_game()
+        # Improved fitness evaluation
+        score = game.get_score()
+        highest_tile = np.max(game.board)
+        fitness_score = score + highest_tile
+
+        # Track the best model and what its final board state was
+        if fitness_score > self.best_score:
+            self.best_score = fitness_score
+            self.best_model = model
+            self.best_final_board = game.board
+
+        return fitness_score
 
     def selection(self, scores):
         total_score = sum(scores)
@@ -54,29 +72,68 @@ class GeneticAlgorithm2048:
 
     def evaluate_population(self):
         scores = []
-        with ThreadPoolExecutor(max_workers=self.population_size) as executor:
-            futures = [executor.submit(self.fitness, model) for model in self.population]
-            for future in as_completed(futures):
-                scores.append(future.result())
+        for model in self.population:
+            score = self.fitness(model)
+            scores.append(score)
         return scores
 
+    def save_population(self, generation):
+        for i, model in enumerate(self.population):
+            model_path = os.path.join(self.model_dir, f"model_gen{generation}_ind{i}.pt")
+            model.save_model(model_path)
+
+    def load_population(self):
+        existing_files = [f for f in os.listdir(self.model_dir) if f.startswith('model_gen')]
+        if not existing_files:
+            return 0  # Start from generation 0 if no existing models
+
+        # Find the highest generation number from the existing files
+        max_gen = max(int(f.split('_')[1][3:]) for f in existing_files)
+        for i in range(self.population_size):
+            model_path = os.path.join(self.model_dir, f"model_gen{max_gen}_ind{i}.pt")
+            if os.path.exists(model_path):
+                self.population[i].load_model(model_path)
+        return max_gen + 1  # Continue from the next generation
+
     def run(self):
-        for generation in range(self.generations):
+        for generation in range(self.current_generation, self.current_generation + self.generations):
             scores = self.evaluate_population()
-            print(f"Generation {generation + 1} scores: {scores}")
+            self.generation_scores.append(scores)
+            sorted_scores = sorted(scores, reverse=True)
+            print(f"Generation {generation + 1} scores: {sorted_scores}")
 
-            for i, score in enumerate(scores):
-                weights = self.get_weights(self.population[i])
-                print(f"Model {i + 1} weights: {weights}")
+            self.save_population(generation)
 
-            new_population = []
-            for _ in range(self.population_size):
+            # Elitism: Copy the top individuals to the new population
+            num_elites = int(self.elitism_rate * self.population_size)
+            elite_indices = np.argsort(scores)[-num_elites:]
+            elites = [self.population[i] for i in elite_indices]
+
+            new_population = elites.copy()
+            while len(new_population) < self.population_size:
                 parent1, parent2 = self.selection(scores)
                 child = self.crossover(parent1, parent2)
                 self.mutate(child)
                 new_population.append(child)
             self.population = new_population
 
+        # Print the final game board state of the highest score model
+        if self.best_model:
+            print(f"Final board state of the highest scoring model during the last {self.generations} generations:")
+            print(self.best_final_board)
+            print(f"Fitness score for this model on this game: {self.best_score}")
+
+        # Plot the scores
+        self.plot_scores()
+
+    def plot_scores(self):
+        generations = range(self.current_generation, self.current_generation + self.generations)
+        max_scores = [max(scores) for scores in self.generation_scores]
+        plt.scatter(generations, max_scores)
+        plt.xlabel('Generations')
+        plt.ylabel('Max Fitness Score')
+        plt.title('Max Fitness Score over Generations')
+        plt.show()
 
 if __name__ == "__main__":
     ga = GeneticAlgorithm2048()

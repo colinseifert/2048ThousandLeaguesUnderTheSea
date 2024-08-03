@@ -4,14 +4,15 @@ from Game2048NN import Game2048NN
 from MoveGenerator import MoveGenerator
 import torch
 
-
 class Game2048:
     def __init__(self):
         self.board = np.zeros((4, 4), dtype=int)
         self.model = Game2048NN()
+        self.score = 0
         self.add_random_tile()
         self.add_random_tile()
-        return
+        # print("Initial board:")
+        # self.print_board()
 
     def add_random_tile(self):
         empty_cells = [(i, j) for i in range(4) for j in range(4) if self.board[i][j] == 0]
@@ -31,6 +32,7 @@ class Game2048:
                     continue
                 if j + 1 < len(tiles) and tiles[j] == tiles[j + 1]:
                     new_row.append(tiles[j] * 2)
+                    self.score += tiles[j] * 2
                     skip = True
                 else:
                     new_row.append(tiles[j])
@@ -68,6 +70,8 @@ class Game2048:
             move_made = self.move_left()
         elif direction == 'RIGHT':
             move_made = self.move_right()
+        # else:
+        #     print(f"Invalid move: {direction}")
 
         if move_made:
             self.add_random_tile()
@@ -83,32 +87,26 @@ class Game2048:
                     return False
         return True
 
+    def get_score(self):
+        return self.score
+
     def print_board(self):
         print(self.board)
 
     def run_game(self):
-        # generate initial tiles (already done on instantiation)
-        #
-        while(not self.is_game_over()):
+
+        while not self.is_game_over():
             try:
                 move = MoveGenerator.generate_NN_moves(self.board, self.model)
+                # print(f"Move: {move}")
             except Exception as e:
-                print(e)
+                print(f"Error during move generation: {e}")
                 break
             self.make_move(move)
-        print(self.board)
-        #can add saving NN to file here
+            # print("Board after move:")
+            # self.print_board()
+            # print(f"Score: {self.get_score()}")
+        # print("Final board:")
+        # self.print_board()
+        # print(f"Final score: {self.get_score()}")
         return
-# # Example usage:
-# game = Game2048()
-# game.print_board()
-# game.make_move('UP')
-# game.print_board()
-# game.make_move('LEFT')
-# game.print_board()
-# game.make_move('DOWN')
-# game.print_board()
-# game.make_move('RIGHT')
-# game.print_board()
-game = Game2048()
-game.run_game
