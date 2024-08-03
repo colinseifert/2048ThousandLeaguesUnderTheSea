@@ -11,21 +11,17 @@ This project uses a genetic algorithm to train a neural network to play the 2048
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/genetic-algorithm-2048.git
-   cd genetic-algorithm-2048
+   git clone https://github.com/colinseifert/2048ThousandLeaguesUnderTheSea.git
+   cd 2048ThousandLeaguesUnderTheSea
    
 2. Create and activate a python virtual environment
 ```bash
 python -m venv myenv
-# On Windows
-myenv\Scripts\activate
-# On macOS/Linux
-source myenv/bin/activate
 ```
 
 3. Install the required dependencies
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ## Running the Project
