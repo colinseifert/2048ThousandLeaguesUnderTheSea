@@ -31,6 +31,22 @@ To run the genetic algorithm:
 python GeneticAlgorithm2048.py
 ```
 
+The output should look something like this:
+
+![img_1.png](ReadMeImages/img_1.png)
+
+Shown are the final scores of individuals in each generation, along with the final
+board state and fitness score of the highest-scoring model across all generations run.
+
+A plot of the best score from each generation should also appear.
+
+By default, the genetic algorithm is set to run a population size of 100 models for 10 generations, if you want to
+play with the parameters, go into GeneticAlgorithm2048.py and change the default parameters shown:
+![img.png](ReadMeImages/img.png)
+
+If you wish to discard a population and train a fresh model, delete the created models folder. Otherwise training
+will continue from the last saved population.
+
 ## Project Structure
 
 **GeneticAlgorithm2048.py**: Entry point for running the genetic algorithm.
